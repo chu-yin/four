@@ -4,22 +4,79 @@
     <meta charset="UTF-8">
     <title>鳳梨價格</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        .submit-button {
+            background-color: green;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            position:absolute;
+            top:50%;
+            left:55%;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+        }
+        .data-button {
+            background-color: green;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            left: 45%;
+            transform: translate(-50%, -50%);
+        }
+        .center-container {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        label, input {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            padding: 10px;
+        }
+        table {
+            width: 30%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+        }
+
+        .header {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
-<form id="pineapple" action="http://localhost:3000/" method="post">
-    <label for="quote">Year</label>
-    <input type="text" id="quote" name="quote">
-    <label for="character">Price</label>
-    <input type="text" id="character" name="character">
-    <button type="submit">Submit</button>
-</form>
+<form id="pineapple" action="http://localhost:3000/api" method="post">
+    <div class="center-container">
+    <label for="year">Year</label>
+    <input type="text" id="year" name="year">
+    <label for="price">Price</label>
+    <input type="text" id="price" name="price">
+    </div>
+    <div class="button-container">
+        <button type="submit" class="submit-button">提交</button>
+    </div>
 <div id="app">
-    <button v-on:click="handleClick">顯示資料</button>
+        <button v-on:click="handleClick" class="data-button">顯示資料</button>
     <table>
         <thead>
         <tr>
-            <th>year</th>
-            <th>price</th>
+            <th class="header">year</th>
+            <th class="header">price</th>
         </tr>
         </thead>
         <tbody>
@@ -33,6 +90,45 @@
 </div>
 
 <script>
+    const formm = document.getElementById('pineapple');
+    formm.addEventListener('submit', handleSubmit);
+
+    async function handleSubmit(event) {
+        event.preventDefault(); // 防止表單提交導致頁面重新載入
+
+        // 將表單轉成 JSON
+        const formData = new FormData(formm); // 取得表單資料
+        // 將資料轉成 JSON
+        const jsonData = {};
+        for (const [key, value] of formData.entries()) {
+            jsonData[key] = value;
+        }
+        const jsonString = JSON.stringify(jsonData);
+        console.log(jsonString);
+
+        // 非同步存取
+        const url = "http://localhost:3000/api"; // 資料傳送到的 URL
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: jsonString,
+            });
+            const data = await response.json();
+
+            // 在這裡處理回應資料，例如顯示成功訊息或更新頁面內容
+            console.log("成功", data);
+            const log = document.getElementById('log');
+            log.innerHTML = JSON.stringify(data);
+
+        } catch (error) {
+            // 在這裡處理錯誤，例如顯示錯誤訊息或者回滾操作
+            console.log("錯誤", error);
+        }
+    }
+
     const app = Vue.createApp({
         data() {
             return {
@@ -49,8 +145,8 @@
                         method: 'GET',
                     });
                     const res_data = await response.json();
-                    this.data = res_data ;
-                    console.log("成功", res_data );
+                    this.data = res_data;
+                    console.log("成功", res_data);
                 } catch (error) {
                     console.log("錯誤", error);
                 }
